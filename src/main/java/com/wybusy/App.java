@@ -1,4 +1,4 @@
-package cn.sh.wy;
+package com.wybusy;
 
 /**
  * Hello world!
