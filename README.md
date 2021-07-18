@@ -6,7 +6,17 @@
 
 默认两种角色，必然存在：easyAdmin管理员，easyUser用户，不可删除
 
-## 使用spring boot使用
+## 更新日志
+
+##### V2.0.0
+
+- 规范路径cn.sh.wy->com.wybusy 
+- 规范类名EasyUserService->EasyUser
+- 增加logo
+
+## spring boot使用
+
+##### V1.0.0
 
 ```java
         <dependency>
@@ -24,10 +34,8 @@
 2. 互踢
    - 多次登录互不影响 人数=0
    - (plan)指定同时登录人数 人数>0
-3. 文本数据库
-   - JSON文件
-4. 数据备份方案
-   - 同时保存两份
+3. 文本数据库，JSON文件
+4. 数据备份方案，同时保存两份
 5. session也持久保存，重启程序不影响用户登录状态
 6. 管理员不能通过用户列表修改自己的密码，信息，不能删除自己
 

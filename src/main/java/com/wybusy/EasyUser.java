@@ -7,7 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
-public class EasyUserService {
+public class EasyUser {
     public static String path = "/publicdata/easyuser";
     /**
      * 最长在线时间为30天
