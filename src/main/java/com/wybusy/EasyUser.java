@@ -22,6 +22,10 @@ public class EasyUser {
      * 默认两种角色，必然存在：easyAdmin管理员，easyUser用户
      */
     private static final Map<String, EasyRoleBean> roleData = new HashMap<>();
+    /**
+     * 默认一种权限，必然存在：easyUser用户管理权限
+     */
+    private static final Map<String, EasyAuthorityBean> authorityData = new HashMap<>();
     private static final Map<String, EasySessionBean> sessionData = new HashMap<>();
 
     private static void mkDirs(File file) {
@@ -99,6 +103,12 @@ public class EasyUser {
         saveFile(path + "/role", (new Date().getTime()) + ".json", false, content);
     }
 
+    private static void saveAuthority() {
+        String content = JSON.toJSONString(authorityData.values());
+        saveFile(path, "authority.json", false, content);
+        saveFile(path + "/authority", (new Date().getTime()) + ".json", false, content);
+    }
+
     private static void saveSession() {
         String content = JSON.toJSONString(sessionData.values());
         saveFile(path, "session.json", false, content);
@@ -155,13 +165,24 @@ public class EasyUser {
         if (roleData.isEmpty()) {
             String roleDataString = readFile(path, "role.json");
             if (roleDataString.equals("")) {
-                roleData.put("easyAdmin", new EasyRoleBean("easyAdmin", "默认管理员", "{}"));
-                roleData.put("easyUser", new EasyRoleBean("easyUser", "默认用户", "{}"));
+                roleData.put("easyAdmin", new EasyRoleBean("easyAdmin", "默认管理员", "easyUser", "{}"));
+                roleData.put("easyUser", new EasyRoleBean("easyUser", "默认用户", "", "{}"));
                 saveRole();
             } else {
                 List<EasyRoleBean> roleDataList = JSON.parseArray(roleDataString, EasyRoleBean.class);
                 for (EasyRoleBean roleBean : roleDataList)
                     roleData.put(roleBean.roleName, roleBean);
+            }
+        }
+        if (authorityData.isEmpty()) {
+            String authorityDataString = readFile(path, "authority.json");
+            if (authorityDataString.equals("")) {
+                authorityData.put("easyUser", new EasyAuthorityBean("easyUser", "用户管理", "{}"));
+                saveAuthority();
+            } else {
+                List<EasyAuthorityBean> authorityDataList = JSON.parseArray(authorityDataString, EasyAuthorityBean.class);
+                for (EasyAuthorityBean authorityBean : authorityDataList)
+                    authorityData.put(authorityBean.authorityName, authorityBean);
             }
         }
         if (sessionData.isEmpty()) {
@@ -184,10 +205,17 @@ public class EasyUser {
         return roleData;
     }
 
+    private static Map<String, EasyAuthorityBean> getAuthorityData() {
+        loadData();
+        return authorityData;
+    }
+
     private static Map<String, EasySessionBean> getSessionData() {
         loadData();
         return sessionData;
     }
+
+    // 用户自我管理使用功能
 
     public static EasyUserBean login(String username, String password) {
         EasyUserBean result = null;
@@ -219,6 +247,40 @@ public class EasyUser {
         return result;
     }
 
+    public static Set<EasyAuthorityBean> getUserAuthorities(String session) {
+        Set<EasyAuthorityBean> result = new HashSet<>();
+        Map<String, EasyAuthorityBean> authorityBeans = getAuthorityData();
+        EasyUserBean userBean = info(session);
+        if(userBean != null) {
+            if(userBean.username.equals("administrator")){
+                result.addAll(authorityBeans.values());
+            } else {
+                String[] roles = userBean.role.split(",");
+                for (String role : roles) {
+                    result.add(authorityBeans.get(role));
+                }
+            }
+        }
+        return result;
+    }
+
+    public static boolean haveAuthority(String session, String authorityName) {
+        boolean result = false;
+        EasyUserBean userBean = info(session);
+        if(userBean.username.equals("administrator")){
+            result = true;
+        } else {
+            Set<EasyAuthorityBean> authorityBeans = getUserAuthorities(session);
+            for(EasyAuthorityBean authorityBean: authorityBeans) {
+                if(authorityBean.authorityName.equals(authorityName)){
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     public static boolean logout(String session) {
         boolean result = false;
         Map<String, EasySessionBean> sessionBeanMap = getSessionData();
@@ -240,34 +302,19 @@ public class EasyUser {
         return result;
     }
 
-    private static boolean isAdmin(String session) {
-        boolean result = false;
-        EasyUserBean userBean = info(session);
-        if (userBean != null && userBean.role.equals("easyAdmin")) {
-            result = true;
-        }
-        return result;
-    }
+    // 管理员用户管理
 
     public static Map<String, EasyUserBean> getUserList(String session) {
         Map<String, EasyUserBean> result = null;
-        if (isAdmin(session)) {
+        if (haveAuthority(session, "easyUser")) {
             result = getUserData();
-        }
-        return result;
-    }
-
-    public static Map<String, EasyRoleBean> getRoleList(String session) {
-        Map<String, EasyRoleBean> result = null;
-        if (isAdmin(session)) {
-            result = getRoleData();
         }
         return result;
     }
 
     public static boolean addUser(String session, String username, String password, String role, String realname, String moreInfoJson) {
         boolean result = false;
-        if (isAdmin(session) && !getUserData().containsKey(username) && getRoleData().containsKey(role)) {
+        if (haveAuthority(session, "easyUser") && !getUserData().containsKey(username) && getRoleData().containsKey(role)) {
             getUserData().put(username, new EasyUserBean(username, dealPw(password), role, realname, moreInfoJson));
             saveUser();
             result = true;
@@ -277,7 +324,7 @@ public class EasyUser {
 
     public static boolean modifyUser(String session, String username, String password, String role, String realname, String moreInfoJson) {
         boolean result = false;
-        if (isAdmin(session)
+        if (haveAuthority(session, "easyUser")
                 && !info(session).username.equals(username) //自己不能通过用户列表修改自己的信息
                 && getUserData().containsKey(username)
                 && (role == null || getRoleData().containsKey(role))) {
@@ -294,7 +341,7 @@ public class EasyUser {
 
     public static boolean deleteUser(String session, String username) {
         boolean result = false;
-        if (isAdmin(session)
+        if (haveAuthority(session, "easyUser")
                 && !info(session).username.equals(username) //自己不能通过用户列表删除自己
                 && getUserData().containsKey(username) && !username.equals("administrator")) {
             getUserData().remove(username);
@@ -310,7 +357,7 @@ public class EasyUser {
     public static List<EasyUserBean> addUsers(String session, List<EasyUserBean> userList) {
         List<EasyUserBean> result = new ArrayList<>();
         boolean save = false;
-        if (isAdmin(session)) {
+        if (haveAuthority(session, "easyUser")) {
             Map<String, EasyUserBean> users = getUserData();
             for (EasyUserBean userBean : userList) {
                 if (users.containsKey(userBean.username) || userBean.password == null || userBean.password.equals("")) {
@@ -327,4 +374,16 @@ public class EasyUser {
         }
         return result;
     }
+
+    // 管理员角色管理
+
+    public static Map<String, EasyRoleBean> getRoleList(String session) {
+        Map<String, EasyRoleBean> result = null;
+        if (haveAuthority(session, "easyUser")) {
+            result = getRoleData();
+        }
+        return result;
+    }
+
+    // 管理员权限管理
 }

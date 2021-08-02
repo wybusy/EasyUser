@@ -2,6 +2,8 @@
 
 一个极简的用户管理。
 
+username是唯一标识，建议使用手机号。
+
 默认administrator/EasyUser，不可删除，身份不可修改。
 
 默认两种角色，必然存在：easyAdmin管理员，easyUser用户，不可删除
@@ -15,6 +17,16 @@
 - 增加logo
 
 ## spring boot使用
+
+##### V2.0.0
+
+```java
+        <dependency>
+            <groupId>com.wybusy</groupId>
+            <artifactId>EasyUser</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+```
 
 ##### V1.0.0
 
