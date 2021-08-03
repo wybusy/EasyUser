@@ -73,7 +73,7 @@
 
 ##### - getUserAuthorities
 获得用户的全部权限
-> param session    
+> param session 或 userBean    
 > return Set<EasyAuthorityBean>
 
 

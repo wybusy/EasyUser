@@ -24,7 +24,7 @@ public class AppTest {
         assertTrue("administrator用正确的密码登录，返回EasyUserBean;", userBean.username.equals("administrator"));
         String session = userBean.session;
         assertSame("通过session获得EasyUserBean;", EasyUser.info(session), userBean);
-        assertEquals("administrator获得authority，应该是全部（目前只有1个）;", EasyUser.getUserAuthorities(session).size(), 1);
+        assertTrue("administrator获得authority，应该是全部（目前只有1个）;", EasyUser.getUserAuthorities(session).equals("easyAdmin"));
         assertTrue("administrator任意权限都应该是true", EasyUser.haveAuthority(session, "any"));
         assertTrue("administrator加一个权限", EasyUser.addAuthority(session, "staff", "员工权限", "{}"));
         assertTrue("administrator加一个角色", EasyUser.addRole(session, "staff", "员工角色", "easyAdmin,staff", "{}"));
@@ -36,7 +36,7 @@ public class AppTest {
         assertTrue("staff登录，返回EasyUserBean;", userBean.username.equals("staff"));
         session = userBean.session;
         assertSame("通过session获得EasyUserBean;", EasyUser.info(session), userBean);
-        assertEquals("staff获得authority，应该是全部（目前有2个）;", EasyUser.getUserAuthorities(session).size(), 2);
+        assertEquals("staff获得authority，应该是全部（目前有2个）;", EasyUser.getUserAuthorities(session).split(",").length, 2);
         assertTrue("staff的easyUser权限都应该是true", EasyUser.haveAuthority(session, "easyAdmin"));
         assertTrue("staff删一个权限", EasyUser.delAuthority(session, "staff"));
         assertTrue("staff删一个角色", EasyUser.delRole(session, "staff"));
