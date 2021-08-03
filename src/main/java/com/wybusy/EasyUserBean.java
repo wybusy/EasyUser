@@ -1,6 +1,7 @@
 package com.wybusy;
 
 public class EasyUserBean {
+    public String uuid;
     public String username;
     public String password;
     public String role; //可以是多个角色，用逗号分隔
