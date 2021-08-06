@@ -372,6 +372,7 @@ public class EasyUser {
         Map<String, EasySessionBean> sessionBeanMap = getSessionData();
         if (sessionBeanMap.containsKey(session)) { // 防止用户已经被删掉
             sessionBeanMap.remove(session);
+            saveSession();
             result = true;
         }
         return result;

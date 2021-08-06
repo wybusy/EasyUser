@@ -16,11 +16,11 @@
 ##### - V2.0.0
 
 ```java
- <dependency>
-     <groupId>com.wybusy</groupId>
-     <artifactId>EasyUser</artifactId>
-     <version>2.0.0</version>
- </dependency>
+<dependency>
+    <groupId>com.wybusy</groupId>
+    <artifactId>EasyUser</artifactId>
+    <version>2.0.0</version>
+</dependency>
 ```
 
 ## TODO
@@ -35,11 +35,11 @@
 ## 策略
 
 - 登录失效
-  - 自登录起，指定时间（30天）失效
-  - (plan)自最后活动，30分钟失效
+- 自登录起，指定时间（30天）失效
+- (plan)自最后活动，30分钟失效
 - 互踢
-  - 多次登录互不影响 人数=0
-  - (plan)指定同时登录人数 人数>0
+- 多次登录互不影响 人数=0
+- (plan)指定同时登录人数 人数>0
 - 文本数据库，JSON文件
 - 数据备份方案，同时保存两份
 - session也持久保存，重启程序不影响用户登录状态
@@ -60,57 +60,58 @@
 
 ##### - login
 用户登录
+
 > param username    
 > param password    
 > return EasyUserBean
 
-
 ##### - info
 根据session取得userBean。当用户被删除后，用户即被登录失效
+
 > param session    
 > return EasyUserBean
 
-
 ##### - getUserAuthorities
 获得用户的全部权限
-> param session 或 userBean    
-> return Set<EasyAuthorityBean>
 
+> param userBean    
+> return Set<EasyAuthorityBean>
 
 ##### - haveAuthority
 用户是否具有某种特定权限
-> param session    
+
+> param userBean    
 > param authorityName    
 > return
 
-
 ##### - logout
 用户登出
+
 > param session    
 > return
 
 ##### - changePassWord
 用户修改密码
-> param session    
+
+> param userBean    
 > param oldPassword    
 > param newPassword    
 > return
 
-
 ##### - getUserData
 管理员获得用户列表
-> return
 
+> return
 
 ##### - getRoleData
 管理员获得角色列表
-> return
 
+> return
 
 ##### - getAuthorityData
 管理员获得权限列表
-> return
 
+> return Map<String, EasyAuthorityBean>
 
 ##### - register(plan)
 
@@ -122,36 +123,37 @@
 
 ##### - addUser
 管理员添加用户
-> param session    
+
+> param userBean    
 > param username    
 > param password    
 > param role    
 > param realname    
 > param moreInfoJson    
-> return
-
+> return boolean
 
 ##### - modifyUser
 管理员修改用户信息
-> param session    
+
+> param userBean    
 > param username    
 > param password    
 > param role    
 > param realname    
 > param moreInfoJson    
-> return
-
+> return boolean
 
 ##### - delUser
 管理员删除用户
-> param session    
-> param username    
-> return
 
+> param userBean    
+> param username    
+> return boolean
 
 ##### - addUsers
 批量添加用户,返回因无权限或用户重复而未能成功添加的用户
-> param session    
+
+> param userBean    
 > param userList    
 > return
 
@@ -160,20 +162,20 @@
 
 ##### - addRole
 增加角色
-> param session    
+
+> param userBean    
 > param roleName    
 > param description    
 > param authority    
 > param moreInfoJson    
 > return boolean
 
-
 ##### - delRole
 删除角色
-> param session    
+
+> param userBean    
 > param roleName    
 > return boolean
-
 
 ##### - modifyRole(plan)
 
@@ -183,17 +185,16 @@
 
 ##### - addAuthority
 增加权限
-> param session    
+
+> param userBean    
 > param authorityName    
 > param description    
 > param moreInfoJson    
 > return boolean
 
-
 ##### - delAuthority
 删除角色
-> param session    
+
+> param userBean    
 > param authorityName    
 > return boolean    
-
-
