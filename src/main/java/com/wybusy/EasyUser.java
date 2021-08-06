@@ -306,13 +306,9 @@ public class EasyUser {
      * ##### - getUserAuthorities
      * 获得用户的全部权限
      *
-     * @param session 或 userBean
+     * @param userBean
      * @return Set<EasyAuthorityBean>
      */
-    public static String getUserAuthorities(String session) {
-        EasyUserBean userBean = info(session);
-        return userBean.authority;
-    }
     public static String getUserAuthorities(EasyUserBean userBean) {
         Set<String> authoritySet = new HashSet<>();
         if (userBean != null) {
@@ -347,17 +343,16 @@ public class EasyUser {
      * ##### - haveAuthority
      * 用户是否具有某种特定权限
      *
-     * @param session
+     * @param userBean
      * @param authorityName
      * @return
      */
-    public static boolean haveAuthority(String session, String authorityName) {
+    public static boolean haveAuthority(EasyUserBean userBean, String authorityName) {
         boolean result = false;
-        EasyUserBean userBean = info(session);
         if (userBean.username.equals("administrator")) {
             result = true;
         } else {
-            List<String> authorityBeans = new ArrayList<>(Arrays.asList(getUserAuthorities(session).split(",")));
+            List<String> authorityBeans = new ArrayList<>(Arrays.asList(getUserAuthorities(userBean).split(",")));
             if (authorityBeans.contains(authorityName)) {
                 result = true;
             }
@@ -386,14 +381,13 @@ public class EasyUser {
      * ##### - changePassWord
      * 用户修改密码
      *
-     * @param session
+     * @param userBean
      * @param oldPassword
      * @param newPassword
      * @return
      */
-    public static boolean changePassWord(String session, String oldPassword, String newPassword) {
+    public static boolean changePassWord(EasyUserBean userBean, String oldPassword, String newPassword) {
         boolean result = false;
-        EasyUserBean userBean = info(session);
         if (!(userBean == null || newPassword == null || newPassword.equals("")) && userBean.password.equals(dealPw(oldPassword))) {
             userBean.password = dealPw(newPassword);
             saveUser();
@@ -428,7 +422,7 @@ public class EasyUser {
      * ##### - getAuthorityData
      * 管理员获得权限列表
      *
-     * @return
+     * @return Map<String, EasyAuthorityBean>
      */
     public static Map<String, EasyAuthorityBean> getAuthorityData() {
         loadData();
@@ -451,17 +445,17 @@ public class EasyUser {
      * ##### - addUser
      * 管理员添加用户
      *
-     * @param session
+     * @param userBean
      * @param username
      * @param password
      * @param role
      * @param realname
      * @param moreInfoJson
-     * @return
+     * @return boolean
      */
-    public static boolean addUser(String session, String username, String password, String role, String realname, String moreInfoJson) {
+    public static boolean addUser(EasyUserBean userBean, String username, String password, String role, String realname, String moreInfoJson) {
         boolean result = false;
-        if (haveAuthority(session, "easyAdmin") && !getUserData().containsKey(username)) {
+        if (haveAuthority(userBean, "easyAdmin") && !getUserData().containsKey(username)) {
             getUserData().put(username, new EasyUserBean(username, dealPw(password), role, realname, moreInfoJson));
             saveUser();
             result = true;
@@ -473,21 +467,20 @@ public class EasyUser {
      * ##### - modifyUser
      * 管理员修改用户信息
      *
-     * @param session
+     * @param userBean
      * @param username
      * @param password
      * @param role
      * @param realname
      * @param moreInfoJson
-     * @return
+     * @return boolean
      */
-    public static boolean modifyUser(String session, String username, String password, String role, String realname, String moreInfoJson) {
+    public static boolean modifyUser(EasyUserBean userBean, String username, String password, String role, String realname, String moreInfoJson) {
         boolean result = false;
-        if (haveAuthority(session, "easyAdmin")
-                && !info(session).username.equals(username) //自己不能通过用户列表修改自己的信息
+        if (haveAuthority(userBean, "easyAdmin")
+                && !userBean.username.equals(username) //自己不能通过用户列表修改自己的信息
                 && getUserData().containsKey(username)
                 && (role == null || getRoleData().containsKey(role))) {
-            EasyUserBean userBean = getUserData().get(username);
             if (!(password == null || password.equals(""))) userBean.password = dealPw(password);
             if (role != null && !username.equals("administrator")) userBean.role = role;
             if (realname != null) userBean.realname = realname;
@@ -502,14 +495,14 @@ public class EasyUser {
      * ##### - delUser
      * 管理员删除用户
      *
-     * @param session
+     * @param userBean
      * @param username
-     * @return
+     * @return boolean
      */
-    public static boolean delUser(String session, String username) {
+    public static boolean delUser(EasyUserBean userBean, String username) {
         boolean result = false;
-        if (haveAuthority(session, "easyAdmin")
-                && !info(session).username.equals(username) //自己不能通过用户列表删除自己
+        if (haveAuthority(userBean, "easyAdmin")
+                && !userBean.username.equals(username) //自己不能通过用户列表删除自己
                 && getUserData().containsKey(username) && !username.equals("administrator")) {
             getUserData().remove(username);
             saveUser();
@@ -522,22 +515,22 @@ public class EasyUser {
      * ##### - addUsers
      * 批量添加用户,返回因无权限或用户重复而未能成功添加的用户
      *
-     * @param session
+     * @param userBean
      * @param userList
      * @return
      */
-    public static List<EasyUserBean> addUsers(String session, List<EasyUserBean> userList) {
+    public static List<EasyUserBean> addUsers(EasyUserBean userBean, List<EasyUserBean> userList) {
         List<EasyUserBean> result = new ArrayList<>();
         boolean save = false;
-        if (haveAuthority(session, "easyAdmin")) {
+        if (haveAuthority(userBean, "easyAdmin")) {
             Map<String, EasyUserBean> users = getUserData();
-            for (EasyUserBean userBean : userList) {
-                if (users.containsKey(userBean.username) || userBean.password == null || userBean.password.equals("")) {
-                    result.add(userBean);
+            for (EasyUserBean user : userList) {
+                if (users.containsKey(user.username) || user.password == null || user.password.equals("")) {
+                    result.add(user);
                 } else {
                     save = true;
-                    userBean.password = dealPw(userBean.password);
-                    getUserData().put(userBean.username, userBean);
+                    user.password = dealPw(user.password);
+                    getUserData().put(user.username, user);
                 }
             }
             if (save) saveUser();
@@ -556,16 +549,16 @@ public class EasyUser {
      * ##### - addRole
      * 增加角色
      *
-     * @param session
+     * @param userBean
      * @param roleName
      * @param description
      * @param authority
      * @param moreInfoJson
      * @return boolean
      */
-    public static boolean addRole(String session, String roleName, String description, String authority, String moreInfoJson) {
+    public static boolean addRole(EasyUserBean userBean, String roleName, String description, String authority, String moreInfoJson) {
         boolean result = false;
-        if (haveAuthority(session, "easyAdmin")) {
+        if (haveAuthority(userBean, "easyAdmin")) {
             Map<String, EasyRoleBean> roleBeans = getRoleData();
             if (!roleBeans.containsKey(roleName)) {
                 roleBeans.put(roleName, new EasyRoleBean(roleName, description, authority, moreInfoJson));
@@ -580,13 +573,13 @@ public class EasyUser {
      * ##### - delRole
      * 删除角色
      *
-     * @param session
+     * @param userBean
      * @param roleName
      * @return boolean
      */
-    public static boolean delRole(String session, String roleName) {
+    public static boolean delRole(EasyUserBean userBean, String roleName) {
         boolean result = false;
-        if (haveAuthority(session, "easyAdmin")
+        if (haveAuthority(userBean, "easyAdmin")
                 && !roleName.equals("easyAdmin") && !roleName.equals("easyUser")) {
             Map<String, EasyRoleBean> roleBeans = getRoleData();
             if (roleBeans.containsKey(roleName)) {
@@ -612,15 +605,15 @@ public class EasyUser {
      * ##### - addAuthority
      * 增加权限
      *
-     * @param session
+     * @param userBean
      * @param authorityName
      * @param description
      * @param moreInfoJson
      * @return boolean
      */
-    public static boolean addAuthority(String session, String authorityName, String description, String moreInfoJson) {
+    public static boolean addAuthority(EasyUserBean userBean, String authorityName, String description, String moreInfoJson) {
         boolean result = false;
-        if (haveAuthority(session, "easyAdmin")) {
+        if (haveAuthority(userBean, "easyAdmin")) {
             Map<String, EasyAuthorityBean> authorityBeans = getAuthorityData();
             if (!authorityBeans.containsKey(authorityName)) {
                 authorityBeans.put(authorityName, new EasyAuthorityBean(authorityName, description, moreInfoJson));
@@ -635,13 +628,13 @@ public class EasyUser {
      * ##### - delAuthority
      * 删除角色
      *
-     * @param session
+     * @param userBean
      * @param authorityName
      * @return boolean
      */
-    public static boolean delAuthority(String session, String authorityName) {
+    public static boolean delAuthority(EasyUserBean userBean, String authorityName) {
         boolean result = false;
-        if (haveAuthority(session, "easyAdmin")
+        if (haveAuthority(userBean, "easyAdmin")
                 && !authorityName.equals("easyAdmin")) {
             Map<String, EasyAuthorityBean> authorityBeans = getAuthorityData();
             if (authorityBeans.containsKey(authorityName)) {
