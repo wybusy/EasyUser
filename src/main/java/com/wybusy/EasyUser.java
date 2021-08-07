@@ -218,9 +218,9 @@ public class EasyUser {
         if (roleData.isEmpty()) {
             String roleDataString = readFile(path, "role.json");
             if (roleDataString.equals("")) {
-                roleData.put("easyStaff", new EasyRoleBean("easyStaff", "默认员工角色", "easyStaff", "{}"));
-                roleData.put("easyAdmin", new EasyRoleBean("easyAdmin", "默认管理员角色", "easyAdmin", "{}"));
-                roleData.put("easyUser", new EasyRoleBean("easyUser", "默认用户角色", "", "{}"));
+                roleData.put("easyStaff", new EasyRoleBean("easyStaff", "默认角色:员工", "easyStaff", "{}"));
+                roleData.put("easyAdmin", new EasyRoleBean("easyAdmin", "默认角色:管理员", "easyAdmin", "{}"));
+                roleData.put("easyUser", new EasyRoleBean("easyUser", "默认角色:用户", "", "{}"));
                 saveRole();
             } else {
                 List<EasyRoleBean> roleDataList = JSON.parseArray(roleDataString, EasyRoleBean.class);
@@ -231,8 +231,8 @@ public class EasyUser {
         if (authorityData.isEmpty()) {
             String authorityDataString = readFile(path, "authority.json");
             if (authorityDataString.equals("")) {
-                authorityData.put("easyStaff", new EasyAuthorityBean("easyStaff", "员工权限", "{}"));
-                authorityData.put("easyAdmin", new EasyAuthorityBean("easyAdmin", "用户管理权限", "{}"));
+                authorityData.put("easyStaff", new EasyAuthorityBean("easyStaff", "默认权限:员工", "{}"));
+                authorityData.put("easyAdmin", new EasyAuthorityBean("easyAdmin", "默认权限:用户", "{}"));
                 saveAuthority();
             } else {
                 List<EasyAuthorityBean> authorityDataList = JSON.parseArray(authorityDataString, EasyAuthorityBean.class);
