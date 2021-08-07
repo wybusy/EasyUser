@@ -218,7 +218,7 @@ public class EasyUser {
         if (roleData.isEmpty()) {
             String roleDataString = readFile(path, "role.json");
             if (roleDataString.equals("")) {
-                roleData.put("easyStaff", new EasyRoleBean("easyStaff", "默认员工角色", "easyStaff,easyAdmin", "{}"));
+                roleData.put("easyStaff", new EasyRoleBean("easyStaff", "默认员工角色", "easyStaff", "{}"));
                 roleData.put("easyAdmin", new EasyRoleBean("easyAdmin", "默认管理员角色", "easyAdmin", "{}"));
                 roleData.put("easyUser", new EasyRoleBean("easyUser", "默认用户角色", "", "{}"));
                 saveRole();
