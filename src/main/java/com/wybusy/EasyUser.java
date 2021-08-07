@@ -9,22 +9,22 @@ import java.util.*;
 
 /**
  * # EasyUser
- * <p>
+ * 
  * > 一个极简的用户管理，建议管理用户不超过1千。不使用数据库，用文本文件保存数据。username是唯一标识，建议使用手机号。
- * <p>
+ * 
  * ## 更新日志
- * <p>
+ * 
  * ##### - V2.0.0
- * <p>
+ * 
  * - 规范路径cn.sh.wy->com.wybusy
  * - 规范类名EasyUserService->EasyUser
  * - 增加logo
  * - 增加权限管理
- * <p>
+ * 
  * ## spring boot使用
- * <p>
+ * 
  * ##### - V2.0.0
- * <p>
+ * 
  * ```java
  * <dependency>
  * <groupId>com.wybusy</groupId>
@@ -32,18 +32,18 @@ import java.util.*;
  * <version>2.0.0</version>
  * </dependency>
  * ```
- * <p>
+ * 
  * ## TODO
- * <p>
+ * 
  * - 指定天数后，强制修改密码
  * - 找回密码
  * - 日志
  * - 管理员可迫使某个用户全部登录失效
  * - 记录lastvisit
  * - 根据lastvisit显示在线用户
- * <p>
+ * 
  * ## 策略
- * <p>
+ * 
  * - 登录失效
  * - 自登录起，指定时间（30天）失效
  * - (plan)自最后活动，30分钟失效
@@ -71,11 +71,12 @@ public class EasyUser {
      */
     private static final Map<String, EasyUserBean> userData = new HashMap<>();
     /**
-     * - 默认两种角色，必然存在：easyAdmin管理员，easyUser用户，不可删除
+     * - 默认三种角色，必然存在：easyStaff内部员工，easyAdmin管理员，easyUser用户，不可删除
+     * - easyStaff内部员工，只有administrator对他有“增删改”权限，其他人员无法更改
      */
     private static final Map<String, EasyRoleBean> roleData = new HashMap<>();
     /**
-     * - 默认一种权限，必然存在：easyAdmin用户管理权限，不可删除
+     * - 默认两种权限，必然存在：easyAdmin用户管理权限，easyStaff员工权限，不可删除
      */
     private static final Map<String, EasyAuthorityBean> authorityData = new HashMap<>();
     private static final Map<String, EasySessionBean> sessionData = new HashMap<>();
@@ -206,7 +207,7 @@ public class EasyUser {
         if (userData.isEmpty()) {
             String userDataString = readFile(path, "user.json");
             if (userDataString.equals("")) {
-                userData.put("administrator", new EasyUserBean("administrator", dealPw("EasyUser"), "easyAdmin", "系统管理员", "{}"));
+                userData.put("administrator", new EasyUserBean("administrator", dealPw("EasyUser"), "", "系统管理员", "{}"));
                 saveUser();
             } else {
                 List<EasyUserBean> userDataList = JSON.parseArray(userDataString, EasyUserBean.class);
@@ -217,8 +218,9 @@ public class EasyUser {
         if (roleData.isEmpty()) {
             String roleDataString = readFile(path, "role.json");
             if (roleDataString.equals("")) {
-                roleData.put("easyAdmin", new EasyRoleBean("easyAdmin", "默认管理员", "easyAdmin", "{}"));
-                roleData.put("easyUser", new EasyRoleBean("easyUser", "默认用户", "", "{}"));
+                roleData.put("easyStaff", new EasyRoleBean("easyStaff", "默认员工角色", "easyStaff,easyAdmin", "{}"));
+                roleData.put("easyAdmin", new EasyRoleBean("easyAdmin", "默认管理员角色", "easyAdmin", "{}"));
+                roleData.put("easyUser", new EasyRoleBean("easyUser", "默认用户角色", "", "{}"));
                 saveRole();
             } else {
                 List<EasyRoleBean> roleDataList = JSON.parseArray(roleDataString, EasyRoleBean.class);
@@ -229,7 +231,8 @@ public class EasyUser {
         if (authorityData.isEmpty()) {
             String authorityDataString = readFile(path, "authority.json");
             if (authorityDataString.equals("")) {
-                authorityData.put("easyAdmin", new EasyAuthorityBean("easyAdmin", "用户管理", "{}"));
+                authorityData.put("easyStaff", new EasyAuthorityBean("easyStaff", "员工权限", "{}"));
+                authorityData.put("easyAdmin", new EasyAuthorityBean("easyAdmin", "用户管理权限", "{}"));
                 saveAuthority();
             } else {
                 List<EasyAuthorityBean> authorityDataList = JSON.parseArray(authorityDataString, EasyAuthorityBean.class);
@@ -444,7 +447,7 @@ public class EasyUser {
 
     /**
      * ##### - addUser
-     * 管理员添加用户
+     * 管理员添加用户，不是administrator不能添加有easyStaff权限的人
      *
      * @param userBean
      * @param username
@@ -457,16 +460,19 @@ public class EasyUser {
     public static boolean addUser(EasyUserBean userBean, String username, String password, String role, String realname, String moreInfoJson) {
         boolean result = false;
         if (haveAuthority(userBean, "easyAdmin") && !getUserData().containsKey(username)) {
-            getUserData().put(username, new EasyUserBean(username, dealPw(password), role, realname, moreInfoJson));
-            saveUser();
-            result = true;
+            EasyUserBean newUserBean = new EasyUserBean(username, dealPw(password), role, realname, moreInfoJson);
+            if (userBean.username.equals("administrator") || !haveAuthority(newUserBean, "easyStaff")) {
+                getUserData().put(username, newUserBean);
+                saveUser();
+                result = true;
+            }
         }
         return result;
     }
 
     /**
      * ##### - modifyUser
-     * 管理员修改用户信息
+     * 管理员修改用户信息。不是administrator不能更改有easyStaff权限的人
      *
      * @param userBean
      * @param username
@@ -481,6 +487,7 @@ public class EasyUser {
         if (haveAuthority(userBean, "easyAdmin")
                 && !userBean.username.equals(username) //自己不能通过用户列表修改自己的信息
                 && getUserData().containsKey(username)
+                && (userBean.username.equals("administrator") || !haveAuthority(getUserData().get(username), "easyStaff")) // 不是administrator不能更改有easyStaff权限的人
                 && (role == null || getRoleData().containsKey(role))) {
             if (!(password == null || password.equals(""))) userBean.password = dealPw(password);
             if (role != null && !username.equals("administrator")) userBean.role = role;
@@ -494,7 +501,7 @@ public class EasyUser {
 
     /**
      * ##### - delUser
-     * 管理员删除用户
+     * 管理员删除用户，不是administrator不能删除有easyStaff权限的人
      *
      * @param userBean
      * @param username
@@ -504,7 +511,9 @@ public class EasyUser {
         boolean result = false;
         if (haveAuthority(userBean, "easyAdmin")
                 && !userBean.username.equals(username) //自己不能通过用户列表删除自己
-                && getUserData().containsKey(username) && !username.equals("administrator")) {
+                && getUserData().containsKey(username)
+                && (userBean.username.equals("administrator") || !haveAuthority(getUserData().get(username), "easyStaff"))
+                && !username.equals("administrator")) {
             getUserData().remove(username);
             saveUser();
             result = true;
@@ -514,11 +523,11 @@ public class EasyUser {
 
     /**
      * ##### - addUsers
-     * 批量添加用户,返回因无权限或用户重复而未能成功添加的用户
+     * 批量添加用户，不是administrator不能添加有easyStaff权限的人。返回因无权限或用户重复而未能成功添加的用户
      *
      * @param userBean
      * @param userList
-     * @return
+     * @return List<EasyUserBean>
      */
     public static List<EasyUserBean> addUsers(EasyUserBean userBean, List<EasyUserBean> userList) {
         List<EasyUserBean> result = new ArrayList<>();
@@ -526,7 +535,8 @@ public class EasyUser {
         if (haveAuthority(userBean, "easyAdmin")) {
             Map<String, EasyUserBean> users = getUserData();
             for (EasyUserBean user : userList) {
-                if (users.containsKey(user.username) || user.password == null || user.password.equals("")) {
+                if (users.containsKey(user.username) || user.password == null || user.password.equals("")
+                || (!userBean.username.equals("administrator") && haveAuthority(user, "easyStaff"))) {
                     result.add(user);
                 } else {
                     save = true;
@@ -581,7 +591,9 @@ public class EasyUser {
     public static boolean delRole(EasyUserBean userBean, String roleName) {
         boolean result = false;
         if (haveAuthority(userBean, "easyAdmin")
-                && !roleName.equals("easyAdmin") && !roleName.equals("easyUser")) {
+                && !roleName.equals("easyStaff")
+                && !roleName.equals("easyAdmin")
+                && !roleName.equals("easyUser")) {
             Map<String, EasyRoleBean> roleBeans = getRoleData();
             if (roleBeans.containsKey(roleName)) {
                 roleBeans.remove(roleName);
@@ -636,6 +648,7 @@ public class EasyUser {
     public static boolean delAuthority(EasyUserBean userBean, String authorityName) {
         boolean result = false;
         if (haveAuthority(userBean, "easyAdmin")
+                && !authorityName.equals("easyStaff")
                 && !authorityName.equals("easyAdmin")) {
             Map<String, EasyAuthorityBean> authorityBeans = getAuthorityData();
             if (authorityBeans.containsKey(authorityName)) {
