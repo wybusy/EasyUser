@@ -489,7 +489,7 @@ public class EasyUser {
                 && !userBean.username.equals(username) //自己不能通过用户列表修改自己的信息
                 && getUserData().containsKey(username)
                 && (userBean.username.equals("administrator") || !haveAuthority(getUserData().get(username), "easyStaff")) // 不是administrator不能更改有easyStaff权限的人
-                && (role == null || getRoleData().containsKey(role))) {
+            ) {
             result = getUserData().get(username);
             if (!(password == null || password.equals(""))) result.password = dealPw(password);
             if (role != null && !username.equals("administrator")){
