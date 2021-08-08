@@ -76,7 +76,7 @@ public class EasyUser {
      */
     private static final Map<String, EasyRoleBean> roleData = new HashMap<>();
     /**
-     * - 默认两种权限，必然存在：easyAdmin用户管理权限，easyStaff员工权限，不可删除
+     * - 默认三种权限，必然存在：easyAdmin用户管理权限，easyStaff员工权限，easyUser注册用户权限，不可删除
      */
     private static final Map<String, EasyAuthorityBean> authorityData = new HashMap<>();
     private static final Map<String, EasySessionBean> sessionData = new HashMap<>();
@@ -220,7 +220,7 @@ public class EasyUser {
             if (roleDataString.equals("")) {
                 roleData.put("easyStaff", new EasyRoleBean("easyStaff", "默认角色:员工", "easyStaff", "{}"));
                 roleData.put("easyAdmin", new EasyRoleBean("easyAdmin", "默认角色:管理员", "easyAdmin", "{}"));
-                roleData.put("easyUser", new EasyRoleBean("easyUser", "默认角色:用户", "", "{}"));
+                roleData.put("easyUser", new EasyRoleBean("easyUser", "默认角色:用户", "easyUser", "{}"));
                 saveRole();
             } else {
                 List<EasyRoleBean> roleDataList = JSON.parseArray(roleDataString, EasyRoleBean.class);
@@ -232,7 +232,8 @@ public class EasyUser {
             String authorityDataString = readFile(path, "authority.json");
             if (authorityDataString.equals("")) {
                 authorityData.put("easyStaff", new EasyAuthorityBean("easyStaff", "默认权限:员工", "{}"));
-                authorityData.put("easyAdmin", new EasyAuthorityBean("easyAdmin", "默认权限:用户", "{}"));
+                authorityData.put("easyAdmin", new EasyAuthorityBean("easyAdmin", "默认权限:用户管理", "{}"));
+                authorityData.put("easyUser", new EasyAuthorityBean("easyUser", "默认权限:注册用户", "{}"));
                 saveAuthority();
             } else {
                 List<EasyAuthorityBean> authorityDataList = JSON.parseArray(authorityDataString, EasyAuthorityBean.class);
