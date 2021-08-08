@@ -458,14 +458,14 @@ public class EasyUser {
      * @param moreInfoJson
      * @return boolean
      */
-    public static boolean addUser(EasyUserBean userBean, String username, String password, String role, String realname, String moreInfoJson) {
-        boolean result = false;
+    public static EasyUserBean addUser(EasyUserBean userBean, String username, String password, String role, String realname, String moreInfoJson) {
+        EasyUserBean result = null;
         if (haveAuthority(userBean, "easyAdmin") && !getUserData().containsKey(username)) {
             EasyUserBean newUserBean = new EasyUserBean(username, dealPw(password), role, realname, moreInfoJson);
             if (userBean.username.equals("administrator") || !haveAuthority(newUserBean, "easyStaff")) {
                 getUserData().put(username, newUserBean);
                 saveUser();
-                result = true;
+                result = newUserBean;
             }
         }
         return result;
@@ -483,19 +483,22 @@ public class EasyUser {
      * @param moreInfoJson
      * @return boolean
      */
-    public static boolean modifyUser(EasyUserBean userBean, String username, String password, String role, String realname, String moreInfoJson) {
-        boolean result = false;
+    public static EasyUserBean modifyUser(EasyUserBean userBean, String username, String password, String role, String realname, String moreInfoJson) {
+        EasyUserBean result = null;
         if (haveAuthority(userBean, "easyAdmin")
                 && !userBean.username.equals(username) //自己不能通过用户列表修改自己的信息
                 && getUserData().containsKey(username)
                 && (userBean.username.equals("administrator") || !haveAuthority(getUserData().get(username), "easyStaff")) // 不是administrator不能更改有easyStaff权限的人
                 && (role == null || getRoleData().containsKey(role))) {
-            if (!(password == null || password.equals(""))) userBean.password = dealPw(password);
-            if (role != null && !username.equals("administrator")) userBean.role = role;
-            if (realname != null) userBean.realname = realname;
-            if (moreInfoJson != null) userBean.moreInfoJson = moreInfoJson;
+            result = getUserData().get(username);
+            if (!(password == null || password.equals(""))) result.password = dealPw(password);
+            if (role != null && !username.equals("administrator")){
+                result.role = role;
+                getUserAuthorities(result);
+            }
+            if (realname != null) result.realname = realname;
+            if (moreInfoJson != null) result.moreInfoJson = moreInfoJson;
             saveUser();
-            result = true;
         }
         return result;
     }
