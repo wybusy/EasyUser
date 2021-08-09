@@ -311,7 +311,7 @@ public class EasyUser {
      * 获得用户的全部权限
      *
      * @param userBean
-     * @return Set<EasyAuthorityBean>
+     * @return String
      */
     public static String getUserAuthorities(EasyUserBean userBean) {
         Set<String> authoritySet = new HashSet<>();
@@ -456,7 +456,7 @@ public class EasyUser {
      * @param role
      * @param realname
      * @param moreInfoJson
-     * @return boolean
+     * @return EasyUserBean
      */
     public static EasyUserBean addUser(EasyUserBean userBean, String username, String password, String role, String realname, String moreInfoJson) {
         EasyUserBean result = null;
@@ -481,7 +481,7 @@ public class EasyUser {
      * @param role
      * @param realname
      * @param moreInfoJson
-     * @return boolean
+     * @return EasyUserBean
      */
     public static EasyUserBean modifyUser(EasyUserBean userBean, String username, String password, String role, String realname, String moreInfoJson) {
         EasyUserBean result = null;
