@@ -25,7 +25,7 @@ public class AppTest {
         assertTrue("administrator获得authority，应该是全部（目前只有1个）;", EasyUser.getUserAuthorities(userBean).equals("easyAdmin"));
         assertTrue("administrator任意权限都应该是true", EasyUser.haveAuthority(userBean, "any"));
         assertTrue("administrator加一个权限", EasyUser.addAuthority(userBean, "staff", "员工权限", "{}"));
-        assertTrue("administrator加一个角色", EasyUser.addRole(userBean, "staff", "员工角色", "easyAdmin,staff", "{}"));
+        assertTrue("administrator加一个角色", EasyUser.addRole(userBean, "staff", "员工角色", "easyAdmin,staff", "{}").roleName.equals("staff"));
         assertTrue("administrator加一个用户", EasyUser.addUser(userBean, "staff", "staff", "easyUser,staff", "张三", "{}").realname.equals("张三"));
         assertTrue("administrator改密码", EasyUser.changePassWord(userBean, "EasyUser", "easyUser"));
         assertTrue("adminstrator登出", EasyUser.logout(session));

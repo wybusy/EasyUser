@@ -569,16 +569,16 @@ public class EasyUser {
      * @param description
      * @param authority
      * @param moreInfoJson
-     * @return boolean
+     * @return EasyRoleBean
      */
-    public static boolean addRole(EasyUserBean userBean, String roleName, String description, String authority, String moreInfoJson) {
-        boolean result = false;
+    public static EasyRoleBean addRole(EasyUserBean userBean, String roleName, String description, String authority, String moreInfoJson) {
+        EasyRoleBean result = null;
         if (haveAuthority(userBean, "easyAdmin")) {
             Map<String, EasyRoleBean> roleBeans = getRoleData();
             if (!roleBeans.containsKey(roleName)) {
-                roleBeans.put(roleName, new EasyRoleBean(roleName, description, authority, moreInfoJson));
+                result = new EasyRoleBean(roleName, description, authority, moreInfoJson);
+                roleBeans.put(roleName, result);
                 saveRole();
-                result = true;
             }
         }
         return result;
@@ -609,9 +609,29 @@ public class EasyUser {
     }
 
     /**
-     * ##### - modifyRole(plan)
-     *
+     * ##### modifyRole
+     * 修改角色信息
+     * @param userBean
+     * @param roleName
+     * @param description
+     * @param authority
+     * @param moreInfoJson
+     * @return EasyRoleBean
      */
+    public static EasyRoleBean modifyRole(EasyUserBean userBean, String roleName, String description, String authority, String moreInfoJson) {
+        EasyRoleBean result = null;
+        if (haveAuthority(userBean, "easyAdmin")) {
+            Map<String, EasyRoleBean> roleBeans = getRoleData();
+            if (roleBeans.containsKey(roleName)) {
+                result = roleBeans.get(roleName);
+                result.description = description;
+                result.authority = authority;
+                result.moreInfoJson = moreInfoJson;
+                saveRole();
+            }
+        }
+        return result;
+    }
 
     /**
      * ## 管理员权限管理
@@ -653,7 +673,8 @@ public class EasyUser {
         boolean result = false;
         if (haveAuthority(userBean, "easyAdmin")
                 && !authorityName.equals("easyStaff")
-                && !authorityName.equals("easyAdmin")) {
+                && !authorityName.equals("easyAdmin")
+                && !authorityName.equals("easyUser")) {
             Map<String, EasyAuthorityBean> authorityBeans = getAuthorityData();
             if (authorityBeans.containsKey(authorityName)) {
                 authorityBeans.remove(authorityName);
