@@ -13,9 +13,10 @@ import java.util.*;
  * > 一个极简的用户管理，建议管理用户不超过1千。不使用数据库，用文本文件保存数据。username是唯一标识，建议使用手机号。
  * 
  * ## 更新日志
- * 
+ *
+ * ##### - V3.0.0
  * ##### - V2.0.0
- * 
+ *
  * - 规范路径cn.sh.wy->com.wybusy
  * - 规范类名EasyUserService->EasyUser
  * - 增加logo
@@ -23,13 +24,13 @@ import java.util.*;
  * 
  * ## spring boot使用
  * 
- * ##### - V2.0.0
+ * ##### - V3.0.0
  * 
  * ```java
  * <dependency>
  * <groupId>com.wybusy</groupId>
  * <artifactId>EasyUser</artifactId>
- * <version>2.0.0</version>
+ * <version>3.0.0</version>
  * </dependency>
  * ```
  * 
@@ -45,15 +46,15 @@ import java.util.*;
  * ## 策略
  * 
  * - 登录失效
- * - 自登录起，指定时间（30天）失效
- * - (plan)自最后活动，30分钟失效
+ *  - 自登录起，指定时间（30天）失效
+ *  - (plan)自最后活动，30分钟失效
  * - 互踢
- * - 多次登录互不影响 人数=0
- * - (plan)指定同时登录人数 人数>0
+ *  - 多次登录互不影响 人数=0
+ *  - (plan)指定同时登录人数 人数>0
  * - 文本数据库，JSON文件
  * - 数据备份方案，同时保存两份
  * - session也持久保存，重启程序不影响用户登录状态
- * - 管理员不能通过用户列表修改自己的密码，信息，不能删除自己
+ *  - 管理员不能通过用户列表修改自己的密码，信息，不能删除自己
  * - 一个角色可以包含多个权限，用逗号分隔
  * - 一个用户可以包含多个角色，用逗号分隔
  */
@@ -349,7 +350,7 @@ public class EasyUser {
      *
      * @param userBean
      * @param authorityName
-     * @return
+     * @return boolean
      */
     public static boolean haveAuthority(EasyUserBean userBean, String authorityName) {
         boolean result = false;
@@ -369,7 +370,7 @@ public class EasyUser {
      * 用户登出
      *
      * @param session
-     * @return
+     * @return boolean
      */
     public static boolean logout(String session) {
         boolean result = false;
@@ -389,7 +390,7 @@ public class EasyUser {
      * @param userBean
      * @param oldPassword
      * @param newPassword
-     * @return
+     * @return boolean
      */
     public static boolean changePassWord(EasyUserBean userBean, String oldPassword, String newPassword) {
         boolean result = false;
@@ -403,9 +404,9 @@ public class EasyUser {
 
     /**
      * ##### - getUserData
-     * 管理员获得用户列表
+     * 获得用户列表
      *
-     * @return
+     * @return Map<String, EasyUserBean>
      */
     public static Map<String, EasyUserBean> getUserData() {
         loadData();
@@ -414,9 +415,9 @@ public class EasyUser {
 
     /**
      * ##### - getRoleData
-     * 管理员获得角色列表
+     * 获得角色列表
      *
-     * @return
+     * @return Map<String, EasyRoleBean>
      */
     public static Map<String, EasyRoleBean> getRoleData() {
         loadData();
@@ -425,7 +426,7 @@ public class EasyUser {
 
     /**
      * ##### - getAuthorityData
-     * 管理员获得权限列表
+     * 获得权限列表
      *
      * @return Map<String, EasyAuthorityBean>
      */
@@ -531,7 +532,7 @@ public class EasyUser {
      *
      * @param userBean
      * @param userList
-     * @return List<EasyUserBean>
+     * @return List< EasyUserBean >
      */
     public static List<EasyUserBean> addUsers(EasyUserBean userBean, List<EasyUserBean> userList) {
         List<EasyUserBean> result = new ArrayList<>();
